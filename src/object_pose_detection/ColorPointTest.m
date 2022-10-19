@@ -39,16 +39,21 @@ zlim([0 0.5]);
 
 pcobj = pointCloud(readXYZ(pointMsg),'Color',uint8(255*readRGB(pointMsg)));
 
-% Red   = [154,55,52]);
-% blue  = [3,83,129]
-% green = [2, 112, 115]
+redBlock   = [209, 90, 99];
+greenBlock = [0, 171, 183];
+blueBlock  = [6, 140, 204];
 
 rgb = pcobj.Color(:,:,:);
 red = pcobj.Color(:,1,:);
 green = pcobj.Color(:,2,:);
 blue = pcobj.Color(:,3,:);
 
-result = find(red > 154 & red < 164 & green > 54 & green < 64 & green > 52 & green < 62);
+thershold = 10;
+
+resultRed   =  find(red > 204 & red < 214  & green > 85 & green < 95 & blue > 94 & blue < 104);
+resultGreen =  find(red > 0   & red < 5    & green > 166 & green < 176 & blue > 178 & blue < 188);
+resultBlue  =  find(red > 1   & red < 11   & green > 135  & green < 145  & blue > 199 & blue < 209);
+
 
 %if (find(red < 10) && find(green < 115) && find(green > 95) && find(blue < 190) && find(blue > 170))
 
@@ -60,15 +65,33 @@ cloud = readXYZ(pointMsg);
 % y = cloud(:,2,:);
 % z = cloud(:,3,:);
 % 
-midIndex = min((result))
-% midIndex = 174074
-x = cloud(midIndex,1,:)
-y = cloud(midIndex,2,:)
-z = cloud(midIndex,3,:)
-r = pcobj.Color(midIndex,1,:)
-g = pcobj.Color(midIndex,2,:)
-b = pcobj.Color(midIndex,3,:)
 
+% Red -------------------------------
+IndexR = min((resultRed));
+Rx = cloud(IndexR,1,:)
+Ry = cloud(IndexR,2,:)
+Rz = cloud(IndexR,3,:)
+Rr = pcobj.Color(IndexR,1,:)
+Rg = pcobj.Color(IndexR,2,:)
+Rb = pcobj.Color(IndexR,3,:)
+
+% Green -----------------------------
+IndexG = min((resultGreen));
+Gx = cloud(IndexG,1,:)
+Gy = cloud(IndexG,2,:)
+Gz = cloud(IndexG,3,:)
+Gr = pcobj.Color(IndexG,1,:)
+Gg = pcobj.Color(IndexG,2,:)
+Gb = pcobj.Color(IndexG,3,:)
+
+% Blue ------------------------------
+IndexB = min((resultBlue));
+Bx = cloud(IndexB,1,:)
+By = cloud(IndexB,2,:)
+Bz = cloud(IndexB,3,:)
+Br = pcobj.Color(IndexB,1,:)
+Bg = pcobj.Color(IndexB,2,:)
+Bb = pcobj.Color(IndexB,3,:)
 
 
 
