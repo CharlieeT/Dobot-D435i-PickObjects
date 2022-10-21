@@ -1,5 +1,6 @@
 classdef Movements < handle
     properties
+        
     end
     methods(Static)%Class use static methods
         function self = Movements()
@@ -11,9 +12,9 @@ classdef Movements < handle
             s = lspb(0,1,50);                                 % Create interpolation scalar
             initialPos = dobot.GetCurrentJointState;
             for i = 1:50
-                x(1,i) = initialPos(1,4)*(1-s(i)) + s(i)*finalPos(1);
-                x(2,i) = initialPos(2,4)*(1-s(i)) + s(i)*finalPos(2);
-                x(3,i) = initialPos(3,4)*(1-s(i)) + s(i)*finalPos(3);
+                x(1,i) = initialPos(1)*(1-s(i)) + s(i)*finalPos(1);
+                x(2,i) = initialPos(2)*(1-s(i)) + s(i)*finalPos(2);
+                x(3,i) = initialPos(3)*(1-s(i)) + s(i)*finalPos(3);
                 x(4,i) = 0;
                 x(5,i) = 0;
             end
@@ -53,5 +54,12 @@ classdef Movements < handle
             openClose = mode;
             robot.PublishToolState(onOff,openClose);
         end
+
+%         %% Calculate for joint state from xyz
+%         function getq(x,y,z)
+%         
+% 
+%         end
+
     end
 end

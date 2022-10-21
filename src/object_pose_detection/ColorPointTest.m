@@ -94,7 +94,6 @@ Bg = pcobj.Color(IndexB,2,:)
 Bb = pcobj.Color(IndexB,3,:)
 
 
-
 %% From Canvas ------------------------------------------------------------------
 % % Loop until user breaks with ctrl+c
 % while 1
