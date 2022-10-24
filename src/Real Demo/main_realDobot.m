@@ -37,9 +37,9 @@ zlim([0 0.5]);
 
 pcobj = pointCloud(readXYZ(pointMsg),'Color',uint8(255*readRGB(pointMsg)));
 
-redBlock   = [209, 90, 99];
-greenBlock = [0, 171, 183];
-blueBlock  = [6, 140, 204];
+redBlock   = [209, 90, 99];   
+greenBlock = [0, 171, 183];   %110,205,207
+blueBlock  = [6, 140, 204];   %32,152,201
 
 rgb = pcobj.Color(:,:,:);
 red = pcobj.Color(:,1,:);
@@ -48,25 +48,18 @@ blue = pcobj.Color(:,3,:);
 
 thershold = 10;
 
-resultRed   =  find(red > 190 & red < 215  & green > 85 & green < 95 & blue > 94 & blue < 104);
-resultGreen =  find(red > 0   & red < 5    & green > 166 & green < 176 & blue > 178 & blue < 188);
-resultBlue  =  find(red > 1   & red < 11   & green > 135  & green < 145  & blue > 199 & blue < 209);
+resultRed   =  find(red > 180 & red < 225  & green > 85 & green < 120 & blue > 94 & blue < 120);
+resultGreen =  find(red > 90   & red < 120    & green > 176 & green < 210 & blue > 178 & blue < 210);
+resultBlue  =  find(red > 1   & red < 40   & green > 135  & green < 145  & blue > 178 & blue < 210);
 
 %if (find(red < 10) && find(green < 115) && find(green > 95) && find(blue < 190) && find(blue > 170))
 
 drawnow();
 
 cloud = readXYZ(pointMsg);
-%  
 % x = cloud(:,1,:);
 % y = cloud(:,2,:);
 % z = cloud(:,3,:);
-
-
-% Red -------------------------------
-IndexR = min((resultRed));
-redBlockPose = [cloud(IndexR,1,:), cloud(IndexR,2,:), cloud(IndexR,3,:)]
-redRGBVal = [pcobj.Color(IndexR,1,:), pcobj.Color(IndexR,2,:), pcobj.Color(IndexR,3,:)]
 % Rx = cloud(IndexR,1,:)
 % Ry = cloud(IndexR,2,:)
 % Rz = cloud(IndexR,3,:)
@@ -74,17 +67,40 @@ redRGBVal = [pcobj.Color(IndexR,1,:), pcobj.Color(IndexR,2,:), pcobj.Color(Index
 % Rg = pcobj.Color(IndexR,2,:)
 % Rb = pcobj.Color(IndexR,3,:)
 
+% Red -------------------------------
+IndexR = min((resultRed))+100;
+redBlockPose = [cloud(IndexR,1,:), cloud(IndexR,2,:), cloud(IndexR,3,:)]
+redRGBVal = [pcobj.Color(IndexR,1,:), pcobj.Color(IndexR,2,:), pcobj.Color(IndexR,3,:)];
+
+if length(redBlockPose) == 0  || all(redBlockPose) == 0
+  disp("Red not found");
+%   redBlockPose = [-0.0612,    0.0587,    0.237]
+  r = 1;
+end  
+
 % Green -----------------------------
-IndexG = min((resultGreen));
+IndexG = min((resultGreen))+100;
 greenBlockPose = [cloud(IndexG,1,:), cloud(IndexG,2,:), cloud(IndexG,3,:)]
-greenRGBVal = [pcobj.Color(IndexG,1,:), pcobj.Color(IndexG,2,:), pcobj.Color(IndexG,3,:)]
+greenRGBVal = [pcobj.Color(IndexG,1,:), pcobj.Color(IndexG,2,:), pcobj.Color(IndexG,3,:)];
+
+if length(greenBlockPose) == 0 || all(greenBlockPose) == 0
+  disp("Green not found");
+%   greenBlockPose = [0.089, 0.035, 0.3]
+  g = 1;
+end  
 
 % Blue ------------------------------
-IndexB = min((resultBlue));
+IndexB = min((resultBlue))+100;
 blueBlockPose = [cloud(IndexB,1,:), cloud(IndexB,2,:), cloud(IndexB,3,:)]
-blueRGBVal = [pcobj.Color(IndexB,1,:), pcobj.Color(IndexB,2,:), pcobj.Color(IndexB,3,:)]
+blueRGBVal = [pcobj.Color(IndexB,1,:), pcobj.Color(IndexB,2,:), pcobj.Color(IndexB,3,:)];
 
-cameraPose = [0.145, -0.424, 0.105];
+if length(blueBlockPose) == 0 || all(blueBlockPose) == 0
+  disp("Blue not found");
+%   blueBlockPose = [0.0064,    0.03485,    0.206]
+  b = 1;
+end  
+
+cameraPose = [0.113, -0.240, -0.349];
 
 %% Loadin simulated Dobot
 
@@ -114,22 +130,41 @@ cameraPose = [0.145, -0.424, 0.105];
 
 %% Calculate the relative pose of the blocks (robot's frame of reference)
 
-blockHeight = -0.1
+blockHeight = -0.12;
 Tmask = DobotSim.model.fkine(q);
 % T = transl([0 0 0]) *  trotx(180, "deg");
 % y is height, 
-redTargetPose = [cameraPose(1) - redBlockPose(1) cameraPose(2) + redBlockPose(3) blockHeight]
-greenTargetPose = [cameraPose(1) - greenBlockPose(1) cameraPose(2) + greenBlockPose(3) blockHeight]
-blueTargetPose = [cameraPose(1) - blueBlockPose(1) cameraPose(2) + blueBlockPose(3) blockHeight]
+
+% redTargetPose = [cameraPose(1) - redBlockPose(1) cameraPose(2) + redBlockPose(3) blockHeight]
+% greenTargetPose = [cameraPose(1) - greenBlockPose(1) cameraPose(2) + greenBlockPose(3) blockHeight]
+% blueTargetPose = [cameraPose(1) - blueBlockPose(1) cameraPose(2) + blueBlockPose(3) blockHeight]
+
+if r == 1    
+    redTargetPose   = [0.0459, -0.2087, -0.1064];
+else 
+    redTargetPose   = [cameraPose(1) + redBlockPose(1)   cameraPose(2) + redBlockPose(2)   blockHeight]
+end
+
+if g == 1
+    greenTargetPose = [0.1818, -0.1921, -0.1605];
+else 
+    greenTargetPose = [cameraPose(1) + greenBlockPose(1) cameraPose(2) + greenBlockPose(2) blockHeight]
+end
+
+if b == 1
+    blueTargetPose = [0.1201, -0.1921, -0.1251];
+else 
+    blueTargetPose  = [cameraPose(1) + blueBlockPose(1)  cameraPose(2) + blueBlockPose(2)  blockHeight]
+end
 
 % qC{1} = DobotSim.model.ikcon(T,[blueTargetPose(1), blueTargetPose(2), blueTargetPose(3)])
 % qC{2} = DobotSim.model.ikcon(T,[redTargetPose(1), redTargetPose(2), redTargetPose(3)])
 % qC{3} = DobotSim.model.ikcon(T,[greenTargetPose(1), greenTargetPose(2), greenTargetPose(3)])
 
 T0 = transl(0,0,0);
-Tr = transl(double(redTargetPose))
-Tg = transl(double(greenTargetPose))
-Tb = transl(double(blueTargetPose))
+Tr = transl(double(redTargetPose));
+Tg = transl(double(greenTargetPose));
+Tb = transl(double(blueTargetPose));
 
 % Tred = ctraj(T0, Tr, 50); 	% compute a Cartesian path
 % Tgreen = ctraj(T0, Tg, 50);
@@ -148,6 +183,10 @@ q2 = [0.5849 0.1784 -0.0749 0 0];
 qC{1} = DobotSim.model.ikcon(Tb)
 qC{2} = DobotSim.model.ikcon(Tr)
 qC{3} = DobotSim.model.ikcon(Tg)
+
+% qC{1} = [-0.9097 1.1093 0.7628 0 0]
+% qC{2} = [-1.3032 0.9910 1.1617 0 0]
+% qC{3} = [-0.7928 1.2774 0.3439 0 0]
 
 % qC{1} = [-1.3232 0.8505 1.0409 0 0]; % Start Position of blue cube
 % 
