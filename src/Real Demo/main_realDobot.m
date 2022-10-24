@@ -9,9 +9,6 @@ rosinit("http://localhost:11311");
 dobot = DobotMagician();
 % dobot.InitaliseRobot;
 
-% If you get the error message for python version, type this in the command window:  pyenv("Version", "/usr/bin/python3.9")
-
-
 %% Enable RBGD Camera for Point Cloud
 
 % pyenv("Version", "/usr/bin/python3.9") in command box to set python to 3.9
@@ -19,6 +16,7 @@ dobot = DobotMagician();
 % In ros: roscore
 % In ros: roslaunch realsense2_camera  rs_d435_camera_with_model.launch (old)
 % In ros: roslaunch realsense2_camera rs_camera.launch align_depth:=true filters:=pointcloud ordered_pc:=true
+% If you get the error message for python version, type this in the command window:  pyenv("Version", "/usr/bin/python3.9")
 
 %%
 
@@ -31,9 +29,15 @@ pointMsg = pointsSub.LatestMessage;                   % <-----------
 pointMsg.PreserveStructureOnRead = false;  %true
 cloudPlot_h = scatter3(pointMsg,'Parent',gca);
 
+% The view of the camera, limited up to dobot and the workspace
 xlim([-0.3 0.3]);
 ylim([-0.1 0.2]);
 zlim([0 0.5]);
+
+% Only the limit the figure to cube colour
+% xlim([-0.1 0.15]);
+% ylim([0.02 0.048]);
+% zlim([0.15 0.23]);
 
 pcobj = pointCloud(readXYZ(pointMsg),'Color',uint8(255*readRGB(pointMsg)));
 
@@ -48,55 +52,45 @@ blue = pcobj.Color(:,3,:);
 
 thershold = 10;
 
-resultRed   =  find(red > 180 & red < 225  & green > 85 & green < 120 & blue > 94 & blue < 120);
+resultRed   =  find(red > 180 & red < 225  & green > 60 & green < 120 & blue > 94 & blue < 120);
 resultGreen =  find(red > 90   & red < 120    & green > 176 & green < 210 & blue > 178 & blue < 210);
 resultBlue  =  find(red > 1   & red < 40   & green > 135  & green < 145  & blue > 178 & blue < 210);
-
-%if (find(red < 10) && find(green < 115) && find(green > 95) && find(blue < 190) && find(blue > 170))
 
 drawnow();
 
 cloud = readXYZ(pointMsg);
-% x = cloud(:,1,:);
-% y = cloud(:,2,:);
-% z = cloud(:,3,:);
-% Rx = cloud(IndexR,1,:)
-% Ry = cloud(IndexR,2,:)
-% Rz = cloud(IndexR,3,:)
-% Rr = pcobj.Color(IndexR,1,:)
-% Rg = pcobj.Color(IndexR,2,:)
-% Rb = pcobj.Color(IndexR,3,:)
+r = 0; g = 0; b = 0;
 
 % Red -------------------------------
-IndexR = min((resultRed))+100;
-redBlockPose = [cloud(IndexR,1,:), cloud(IndexR,2,:), cloud(IndexR,3,:)]
+IndexR = min((resultRed))+50;
+redBlockPose = [cloud(IndexR,1,:), cloud(IndexR,2,:), cloud(IndexR,3,:)];
 redRGBVal = [pcobj.Color(IndexR,1,:), pcobj.Color(IndexR,2,:), pcobj.Color(IndexR,3,:)];
 
 if length(redBlockPose) == 0  || all(redBlockPose) == 0
   disp("Red not found");
-%   redBlockPose = [-0.0612,    0.0587,    0.237]
+   redBlockPose = [-0.0612,    0.0587,    0.237]
   r = 1;
 end  
 
 % Green -----------------------------
-IndexG = min((resultGreen))+100;
-greenBlockPose = [cloud(IndexG,1,:), cloud(IndexG,2,:), cloud(IndexG,3,:)]
+IndexG = min((resultGreen))+50;
+greenBlockPose = [cloud(IndexG,1,:), cloud(IndexG,2,:), cloud(IndexG,3,:)];
 greenRGBVal = [pcobj.Color(IndexG,1,:), pcobj.Color(IndexG,2,:), pcobj.Color(IndexG,3,:)];
 
 if length(greenBlockPose) == 0 || all(greenBlockPose) == 0
   disp("Green not found");
-%   greenBlockPose = [0.089, 0.035, 0.3]
+   greenBlockPose = [0.089, 0.035, 0.3]
   g = 1;
 end  
 
 % Blue ------------------------------
-IndexB = min((resultBlue))+100;
-blueBlockPose = [cloud(IndexB,1,:), cloud(IndexB,2,:), cloud(IndexB,3,:)]
+IndexB = min((resultBlue))+50;
+blueBlockPose = [cloud(IndexB,1,:), cloud(IndexB,2,:), cloud(IndexB,3,:)];
 blueRGBVal = [pcobj.Color(IndexB,1,:), pcobj.Color(IndexB,2,:), pcobj.Color(IndexB,3,:)];
 
 if length(blueBlockPose) == 0 || all(blueBlockPose) == 0
   disp("Blue not found");
-%   blueBlockPose = [0.0064,    0.03485,    0.206]
+   blueBlockPose = [0.0064,    0.03485,    0.206]
   b = 1;
 end  
 
@@ -123,36 +117,34 @@ cameraPose = [0.113, -0.240, -0.349];
     q = [0 pi/4 pi/4 0 0];
       
     DobotSim.model = SerialLink([L1 L2 L3 L4 L5],'name','Dobot');
-%     DobotSim.model.plot(q);
+    DobotSim.model.plot(q);
     
 
-     
 
 %% Calculate the relative pose of the blocks (robot's frame of reference)
 
 blockHeight = -0.12;
 Tmask = DobotSim.model.fkine(q);
-% T = transl([0 0 0]) *  trotx(180, "deg");
-% y is height, 
-
-% redTargetPose = [cameraPose(1) - redBlockPose(1) cameraPose(2) + redBlockPose(3) blockHeight]
-% greenTargetPose = [cameraPose(1) - greenBlockPose(1) cameraPose(2) + greenBlockPose(3) blockHeight]
-% blueTargetPose = [cameraPose(1) - blueBlockPose(1) cameraPose(2) + blueBlockPose(3) blockHeight]
 
 if r == 1    
-    redTargetPose   = [0.0459, -0.2087, -0.1064];
+%     redTargetPose   = %[0.0459, -0.2087, -0.1064]
+        disp("bad red target pose");
 else 
     redTargetPose   = [cameraPose(1) + redBlockPose(1)   cameraPose(2) + redBlockPose(2)   blockHeight]
 end
 
 if g == 1
-    greenTargetPose = [0.1818, -0.1921, -0.1605];
+%     greenTargetPose = %[0.1818, -0.1921, -0.1605]
+        disp("bad green target pose");
+        greenTargetPose = [cameraPose(1) + greenBlockPose(1) cameraPose(2) + greenBlockPose(2) blockHeight]
 else 
     greenTargetPose = [cameraPose(1) + greenBlockPose(1) cameraPose(2) + greenBlockPose(2) blockHeight]
 end
 
 if b == 1
-    blueTargetPose = [0.1201, -0.1921, -0.1251];
+%     blueTargetPose =  %[0.1201, -0.1921, -0.1251]
+        disp("bad blue target pose");
+        blueTargetPose  = [cameraPose(1) + blueBlockPose(1)  cameraPose(2) + blueBlockPose(2)  blockHeight]
 else 
     blueTargetPose  = [cameraPose(1) + blueBlockPose(1)  cameraPose(2) + blueBlockPose(2)  blockHeight]
 end
@@ -184,9 +176,6 @@ qC{1} = DobotSim.model.ikcon(Tb)
 qC{2} = DobotSim.model.ikcon(Tr)
 qC{3} = DobotSim.model.ikcon(Tg)
 
-% qC{1} = [-0.9097 1.1093 0.7628 0 0]
-% qC{2} = [-1.3032 0.9910 1.1617 0 0]
-% qC{3} = [-0.7928 1.2774 0.3439 0 0]
 
 % qC{1} = [-1.3232 0.8505 1.0409 0 0]; % Start Position of blue cube
 % 
@@ -205,7 +194,7 @@ qI = q0;
 
 for i = 1:1:3
 
-    qMatrix = jtraj(qI,q1,50);
+    qMatrix =  jtraj(qI,q1,50);
     qMatrix2 = jtraj(q1,q2,50);
     qMatrix1 = jtraj(q1,qC{i},50);
     qMatrix3 = jtraj(q2,qE{i},50);
@@ -227,8 +216,10 @@ for i = 1:1:3
     qI = q2;
 
 end
-
-
+%% Return to Origin
+q2 = [0.5849 0.1784 -0.0749 0 0];
+qMatrixOrigin = jtraj(q2, q0, 50);
+Movements.move(qMatrixOrigin);
 %% 
 
 
