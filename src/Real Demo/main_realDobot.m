@@ -19,7 +19,6 @@ dobot = DobotMagician();
 
   % ROS: 
     % In ros: roscore
-    % In ros: roslaunch realsense2_camera  rs_d435_camera_with_model.launch (old)
     % In ros: roslaunch realsense2_camera rs_camera.launch align_depth:=true filters:=pointcloud ordered_pc:=true
 
   % Matlab:
