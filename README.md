@@ -5,7 +5,11 @@
 ### **Dobot Magician and Intel D435i Colour Blocks Picker**
 ![IMG_E9356](https://user-images.githubusercontent.com/88194090/197849301-5525d66b-8bde-496e-86aa-40085fe4a0b0.JPG)
 
-Contributors: Li-Ting Tsai (Charlie Tsai) 13336209
+Contributors: 
+* Li-Ting Tsai (Charlie Tsai) 13336209
+* Leon Salvaggio 13187315
+* Charlie Neil 12905535
+
 
 ## Project Description
 The main focus of this project is to implement the Intel D435i RGB-D camera to sense the environment while using the collected data to determine the ideal response for the Dobot Magician robotic arm for picking and placing the object of user’s choosing. In this project, Robotic Operating System (ROS) and MATLAB was used to stream and access the 3D point cloud data for colour identification as well as target pose calculation for the setting of waypoints for the picking location and utilise said information to manipulate the position of different colour blocks to their allocated drop zone.
